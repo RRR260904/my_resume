@@ -5,8 +5,8 @@ import { adminLogin } from '../services/api';
 
 export function AdminLogin() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin_password_123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,12 +29,6 @@ export function AdminLogin() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleFillDefaults = (user = 'Roshan') => {
-    setUsername(user);
-    setPassword('admin_password_123');
-    setError('');
   };
 
   return (
@@ -133,30 +127,6 @@ export function AdminLogin() {
               )}
             </button>
           </form>
-
-          {/* Quick preset credentials helper */}
-          <div className="mt-6 pt-5 border-t border-slate-800/80 text-center">
-            <span className="text-[11px] font-mono text-slate-500 block mb-2">
-              Development Default Credentials
-            </span>
-            <div className="flex items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => handleFillDefaults('Roshan')}
-                className="text-xs text-blue-400 hover:text-blue-300 font-mono underline underline-offset-4 cursor-pointer"
-              >
-                Autofill Roshan
-              </button>
-              <span className="text-slate-600 text-xs">|</span>
-              <button
-                type="button"
-                onClick={() => handleFillDefaults('admin')}
-                className="text-xs text-slate-400 hover:text-slate-300 font-mono underline underline-offset-4 cursor-pointer"
-              >
-                Autofill admin
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
