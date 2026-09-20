@@ -31,6 +31,9 @@ import {
   Cloud,
   HardDrive,
   CheckCircle2,
+  Upload,
+  Image as ImageIcon,
+  Link2,
 } from 'lucide-react';
 import {
   fetchAdminStats,
@@ -84,7 +87,160 @@ const TABS: TabConfig[] = [
   { id: 'contact_info', label: 'Contact Info', icon: Mail, singular: 'Contact Info' },
   { id: 'contact_messages', label: 'Messages', icon: Inbox, singular: 'Message' },
   { id: 'site_settings', label: 'Site Settings', icon: Sliders, singular: 'Settings' },
-];
+// Helper to compress and convert image file to optimized Base64 data URL for MongoDB storage
+function compressAndConvertImage(file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(event.target?.result as string);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error('Failed to parse image file'));
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('Failed to read image file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// Reusable Image Upload and Preview field for MongoDB CMS
+function ImageUploadField({
+  label,
+  value,
+  onChange,
+  placeholder = 'https://... or click Upload to choose from device',
+}: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file (.jpg, .png, .webp)');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError(null);
+      const dataUrl = await compressAndConvertImage(file);
+      onChange(dataUrl);
+    } catch (err: any) {
+      setError('Error uploading image: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+      <div className="flex items-center justify-between">
+        <label className="block text-xs font-mono uppercase text-blue-400 font-semibold">
+          {label}
+        </label>
+        {value && (
+          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">
+            Image Loaded
+          </span>
+        )}
+      </div>
+
+      {/* Live Preview if present */}
+      {value && (
+        <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900 border border-slate-800">
+          <div className="w-16 h-16 rounded-lg overflow-hidden bg-slate-950 border border-slate-700 shrink-0 flex items-center justify-center">
+            <img
+              src={value}
+              alt="Preview"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-xs text-slate-300 font-medium block">
+              Active Preview
+            </span>
+            <span className="text-[10px] text-slate-500 font-mono truncate block">
+              {value.startsWith('data:image') ? 'Base64 image stored in MongoDB' : value}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="px-2.5 py-1 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/50 text-[11px] font-medium transition-colors"
+          >
+            Remove
+          </button>
+        </div>
+      )}
+
+      {/* Inputs (File Upload button + Direct URL input) */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            value={value && value.startsWith('data:image') ? '[Uploaded Image from Device]' : (value || '')}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="w-full pl-8 pr-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
+          />
+          <Link2 className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+        </div>
+
+        <label className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 hover:text-blue-200 text-xs font-medium cursor-pointer transition-colors shrink-0">
+          {uploading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Upload className="w-3.5 h-3.5" />
+          )}
+          <span>{uploading ? 'Processing Image...' : '📁 Upload Photo from Device'}</span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+        </label>
+      </div>
+
+      {error && <p className="text-[11px] text-rose-400 font-mono">{error}</p>}
+    </div>
+  );
+}
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -936,17 +1092,13 @@ export function AdminDashboard() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-mono uppercase text-slate-400 mb-1">Thumbnail Image URL</label>
-                      <input
-                        type="text"
-                        value={formData.thumbnail || ''}
-                        onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                        placeholder="https://images.unsplash.com/..."
-                        className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs"
-                      />
-                    </div>
+                  <div className="space-y-4">
+                    <ImageUploadField
+                      label="Thumbnail Image"
+                      value={formData.thumbnail || ''}
+                      onChange={(val) => setFormData({ ...formData, thumbnail: val })}
+                    />
+
                     <div>
                       <label className="block text-xs font-mono uppercase text-slate-400 mb-1">Category</label>
                       <input
@@ -1255,6 +1407,25 @@ export function AdminDashboard() {
                           />
                           <span className="capitalize">{key.replace(/_/g, ' ')}</span>
                         </label>
+                      );
+                    }
+
+                    const isImageField =
+                      key.includes('image') ||
+                      key.includes('avatar') ||
+                      key.includes('thumbnail') ||
+                      key.includes('badge') ||
+                      key.includes('photo') ||
+                      key.includes('og_image');
+
+                    if (isImageField && !isArray) {
+                      return (
+                        <ImageUploadField
+                          key={key}
+                          label={key.replace(/_/g, ' ')}
+                          value={typeof val === 'string' ? val : ''}
+                          onChange={(newVal) => setFormData({ ...formData, [key]: newVal })}
+                        />
                       );
                     }
 
