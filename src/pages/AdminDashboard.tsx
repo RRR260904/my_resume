@@ -87,6 +87,8 @@ const TABS: TabConfig[] = [
   { id: 'contact_info', label: 'Contact Info', icon: Mail, singular: 'Contact Info' },
   { id: 'contact_messages', label: 'Messages', icon: Inbox, singular: 'Message' },
   { id: 'site_settings', label: 'Site Settings', icon: Sliders, singular: 'Settings' },
+];
+
 // Helper to compress and convert image file to optimized Base64 data URL for MongoDB storage
 function compressAndConvertImage(file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.85): Promise<string> {
   return new Promise((resolve, reject) => {
