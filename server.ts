@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import fs from 'fs';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -474,7 +475,7 @@ async function startServer() {
   });
 
   // ==========================================
-  // VITE OR STATIC FRONTEND SERVING
+  // VITE OR STATIC FRONTEND SERVING / HEALTH CHECK
   // ==========================================
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -484,10 +485,27 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+    const indexPath = path.join(distPath, 'index.html');
+    
+    if (fs.existsSync(indexPath)) {
+      app.use(express.static(distPath));
+      app.get('*', (req, res) => {
+        res.sendFile(indexPath);
+      });
+    } else {
+      app.get('/', (req, res) => {
+        res.json({
+          status: 'ok',
+          message: 'Portfolio Backend API is running smoothly.',
+          endpoints: {
+            summary: '/api/portfolio-summary',
+            profile: '/api/profile',
+            skills: '/api/skills',
+            projects: '/api/projects'
+          }
+        });
+      });
+    }
   }
 
   app.listen(PORT, '0.0.0.0', () => {
