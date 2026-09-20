@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Sparkles, Database, RefreshCw, AlertCircle } from 'lucide-react';
+import { Shield, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
 import { fetchPortfolioSummary } from '../services/api';
 import { PortfolioData } from '../types';
 import { Navbar } from '../components/Navbar';
@@ -21,6 +21,16 @@ export function PortfolioHome() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [loadingDots, setLoadingDots] = useState('');
+
+  // Animate dots while loading
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLoadingDots(prev => prev.length >= 3 ? '' : prev + '.');
+    }, 400);
+    return () => clearInterval(interval);
+  }, []);
+
   const loadPortfolio = async () => {
     try {
       setLoading(true);
@@ -32,11 +42,11 @@ export function PortfolioHome() {
       if (summary.site_settings?.site_title) {
         document.title = summary.site_settings.site_title;
       } else if (summary.profile?.name) {
-        document.title = `${summary.profile.name} | ${summary.profile.role || 'Developer Portfolio'}`;
+        document.title = `${summary.profile.name} | ${summary.profile.role || 'Portfolio'}`;
       }
     } catch (err: any) {
       console.error('Failed to fetch portfolio data:', err);
-      setError('Unable to connect to MongoDB server. Please ensure the backend is running.');
+      setError('Unable to connect to server. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -48,17 +58,39 @@ export function PortfolioHome() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 space-y-4">
-        <div className="relative w-12 h-12">
-          <div className="w-12 h-12 rounded-full border-2 border-blue-500/20 border-t-blue-500 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex flex-col items-center justify-center">
+        {/* Animated background circles */}
+        <div className="absolute top-20 left-20 w-64 h-64 bg-blue-200/40 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-indigo-200/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+
+        <div className="relative z-10 text-center space-y-6">
+          {/* Logo initials */}
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto shadow-xl shadow-blue-200">
+            <span className="text-white text-3xl font-black">R</span>
+          </div>
+
+          {/* Welcome text */}
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-slate-800">Welcome</h1>
+            <p className="text-slate-500 text-sm">Loading Roshan's Portfolio{loadingDots}</p>
+          </div>
+
+          {/* Loading bar */}
+          <div className="w-48 h-1.5 bg-slate-200 rounded-full mx-auto overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-[loading_1.5s_ease-in-out_infinite]" style={{ width: '60%', animation: 'slideRight 1.5s ease-in-out infinite' }} />
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-xs font-mono tracking-wider uppercase text-slate-400">
-          <Database className="w-3.5 h-3.5 text-blue-400" />
-          <span>Loading MongoDB Portfolio Stream...</span>
-        </div>
+
+        <style>{`
+          @keyframes slideRight {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+          }
+        `}</style>
       </div>
     );
   }
+
 
   if (error || !data) {
     return (
@@ -154,7 +186,7 @@ export function PortfolioHome() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080c14] text-slate-100 selection:bg-blue-600 selection:text-white relative">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-800 selection:bg-blue-200 selection:text-blue-900 relative">
       {/* Top Navbar: dynamically filters menu items based on existing data */}
       <Navbar data={data} />
 

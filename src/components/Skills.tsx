@@ -73,7 +73,6 @@ export function Skills({ skills }: SkillsProps) {
     return null;
   }
 
-  // Extract unique categories from actual database items
   const categories = useMemo(() => {
     const set = new Set<string>();
     skills.forEach((s) => {
@@ -92,19 +91,19 @@ export function Skills({ skills }: SkillsProps) {
   }, [skills, activeCategory]);
 
   return (
-    <section id="skills" className="py-24 px-4 sm:px-6 lg:px-8 relative">
+    <section id="skills" className="py-24 px-4 sm:px-6 lg:px-8 relative bg-slate-50">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/50 border border-blue-800/40 text-blue-400 text-xs font-mono uppercase tracking-widest mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-xs font-mono uppercase tracking-widest mb-3">
             <Terminal className="w-3.5 h-3.5" />
             <span>Technical Capabilities</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Skills & Technologies
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto mt-3">
-            Production-tested stack spanning distributed backends, modern frontend architectures, and cloud infrastructure.
+          <p className="text-slate-500 text-sm sm:text-base max-w-xl mx-auto mt-3">
+            A full-stack toolkit spanning modern frontend, backend, and cloud infrastructure.
           </p>
         </div>
 
@@ -118,8 +117,8 @@ export function Skills({ skills }: SkillsProps) {
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 py-2 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer ${
                   activeCategory === cat
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                    : 'bg-slate-900/60 hover:bg-slate-800 text-slate-300 border border-slate-800'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                    : 'bg-white hover:bg-blue-50 text-slate-600 border border-slate-200 hover:border-blue-200'
                 }`}
               >
                 {cat}
@@ -141,28 +140,28 @@ export function Skills({ skills }: SkillsProps) {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.25 }}
                   key={skill.id || skill.name}
-                  className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-blue-500/40 backdrop-blur-md transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 group"
+                  className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg hover:shadow-blue-50 group"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-blue-400 group-hover:text-blue-300 group-hover:bg-blue-950/40 transition-colors">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 group-hover:bg-blue-100 transition-colors">
                         <IconComponent className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-semibold text-white group-hover:text-blue-300 transition-colors">
+                        <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">
                           {skill.name}
                         </h4>
-                        <span className="text-[11px] text-slate-500 font-mono">
+                        <span className="text-[11px] text-slate-400 font-mono">
                           {skill.category}
                         </span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="text-xs font-mono font-bold text-blue-400">
+                      <span className="text-xs font-mono font-bold text-blue-600">
                         {skill.proficiency}%
                       </span>
                       {skill.featured && (
-                        <span className="text-[10px] font-semibold text-purple-400 bg-purple-950/40 border border-purple-800/40 px-1.5 py-0.5 rounded mt-0.5">
+                        <span className="text-[10px] font-semibold text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded mt-0.5">
                           Featured
                         </span>
                       )}
@@ -170,7 +169,7 @@ export function Skills({ skills }: SkillsProps) {
                   </div>
 
                   {/* Proficiency Bar */}
-                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: `${skill.proficiency}%` }}
