@@ -8,41 +8,36 @@ interface HeroProps {
 }
 
 export function Hero({ profile, socialLinks }: HeroProps) {
-  if (!profile || !profile.is_active) {
-    return null;
-  }
+  if (!profile || !profile.is_active) return null;
 
   const scrollToSection = (href: string) => {
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center pt-28 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      {/* Light background blobs */}
-      <div
-        aria-hidden="true"
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-tr from-blue-200/60 via-indigo-100/40 to-purple-200/60 blur-[100px] rounded-full pointer-events-none"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute top-2/3 right-10 w-[300px] h-[300px] bg-blue-100/60 blur-[80px] rounded-full pointer-events-none"
-      />
+    <section className="relative min-h-screen flex items-center justify-center pt-24 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Animated background blobs */}
+      <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] rounded-full bg-blue-400/10 dark:bg-blue-500/10 blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-0 w-[300px] h-[300px] rounded-full bg-indigo-400/10 dark:bg-indigo-500/8 blur-[100px]" style={{ animation: 'pulse-glow 4s ease-in-out infinite 1.5s' }} />
+        <div className="absolute top-1/4 left-0 w-[250px] h-[250px] rounded-full bg-purple-400/8 dark:bg-purple-500/8 blur-[80px]" style={{ animation: 'pulse-glow 5s ease-in-out infinite 0.5s' }} />
+      </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center text-center">
-        {/* Availability Badge */}
+      <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center text-center">
+
+        {/* Available badge */}
         {profile.available_for_work && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium mb-8 shadow-sm"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700/50 text-emerald-700 dark:text-emerald-400 text-xs font-medium mb-6 sm:mb-8"
           >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            Available for new opportunities & consulting
+            Available for opportunities
           </motion.div>
         )}
 
@@ -51,11 +46,11 @@ export function Hero({ profile, socialLinks }: HeroProps) {
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="relative mb-8 group"
+            transition={{ duration: 0.6 }}
+            className="relative mb-6 sm:mb-8 group"
           >
-            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 opacity-50 blur-md group-hover:opacity-80 transition duration-500" />
-            <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden border-4 border-white bg-slate-100 shadow-2xl shadow-blue-100">
+            <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-60 blur-sm group-hover:opacity-90 transition duration-500" />
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-theme-surface bg-theme-muted shadow-2xl">
               <img
                 src={profile.profile_image}
                 alt={profile.name}
@@ -66,72 +61,92 @@ export function Hero({ profile, socialLinks }: HeroProps) {
           </motion.div>
         )}
 
-        {/* Name & Role */}
-        <motion.div
+        {/* Role badge */}
+        {profile.role && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="section-pill mb-4"
+          >
+            <Briefcase className="w-3 h-3" />
+            <span>{profile.role}</span>
+          </motion.div>
+        )}
+
+        {/* Name */}
+        <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="space-y-3 max-w-4xl"
+          transition={{ delay: 0.15 }}
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] mb-4"
+          style={{ color: 'var(--text)' }}
         >
-          {profile.role && (
-            <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-mono uppercase tracking-widest text-blue-600 font-semibold px-3 py-1 bg-blue-50 rounded-full border border-blue-200">
-              <Briefcase className="w-3.5 h-3.5" />
-              <span>{profile.role}</span>
-            </div>
-          )}
+          Hi, I'm{' '}
+          <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+            {profile.name}
+          </span>
+        </motion.h1>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-tight">
-            Hi, I'm{' '}
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent">
-              {profile.name}
-            </span>
-          </h1>
+        {/* Tagline */}
+        {profile.tagline && (
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-base sm:text-lg md:text-xl max-w-2xl leading-relaxed mb-3"
+            style={{ color: 'var(--text-sub)' }}
+          >
+            {profile.tagline}
+          </motion.p>
+        )}
 
-          {profile.tagline && (
-            <p className="text-lg sm:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto pt-2">
-              {profile.tagline}
-            </p>
-          )}
+        {/* Bio */}
+        {profile.bio && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.25 }}
+            className="text-sm sm:text-base max-w-xl leading-relaxed mb-6 sm:mb-8"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {profile.bio}
+          </motion.p>
+        )}
 
-          {profile.bio && (
-            <p className="text-sm sm:text-base text-slate-500 max-w-xl mx-auto leading-relaxed pt-1">
-              {profile.bio}
-            </p>
-          )}
-        </motion.div>
-
-        {/* Location & Experience meta */}
+        {/* Meta info */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-6 text-xs text-slate-500 font-mono"
+          transition={{ delay: 0.3 }}
+          className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 mb-8 sm:mb-10 text-xs font-mono"
+          style={{ color: 'var(--text-muted)' }}
         >
           {profile.location && (
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" />
-              <span>{profile.location}</span>
-            </div>
+            <span className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} />
+              {profile.location}
+            </span>
           )}
           {typeof profile.years_of_experience === 'number' && profile.years_of_experience > 0 && (
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-              <span>{profile.years_of_experience} {profile.years_of_experience === 1 ? 'Year' : 'Years'} Experience</span>
-            </div>
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />
+              {profile.years_of_experience}y Experience
+            </span>
           )}
         </motion.div>
 
-        {/* Action Buttons */}
+        {/* CTAs — full width on mobile */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-wrap items-center justify-center gap-3.5 mt-8"
+          transition={{ delay: 0.35 }}
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full sm:w-auto"
         >
           <button
             type="button"
             onClick={() => scrollToSection('#projects')}
-            className="px-6 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 cursor-pointer"
+            className="btn-accent flex-1 sm:flex-none"
           >
             Explore Projects
           </button>
@@ -141,34 +156,36 @@ export function Hero({ profile, socialLinks }: HeroProps) {
               href={profile.resume_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all duration-200 shadow-sm"
+              className="btn-ghost flex-1 sm:flex-none"
             >
-              <Download className="w-4 h-4 text-blue-500" />
-              <span>Download Resume</span>
+              <Download className="w-4 h-4" />
+              <span>Resume</span>
             </a>
           )}
 
           <button
             type="button"
             onClick={() => scrollToSection('#contact')}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition-all duration-200 cursor-pointer"
+            className="btn-ghost flex-1 sm:flex-none"
           >
-            <Mail className="w-4 h-4 text-slate-400" />
-            <span>Get in Touch</span>
+            <Mail className="w-4 h-4" />
+            <span>Contact</span>
           </button>
         </motion.div>
 
         {/* Scroll indicator */}
-        <motion.div
+        <motion.button
+          type="button"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="mt-16 flex flex-col items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+          transition={{ delay: 0.8 }}
           onClick={() => scrollToSection('#about')}
+          className="mt-14 sm:mt-20 flex flex-col items-center gap-1 cursor-pointer transition-colors"
+          style={{ color: 'var(--text-muted)' }}
         >
-          <span className="text-[11px] font-mono tracking-widest uppercase mb-1">Scroll to explore</span>
-          <ArrowDown className="w-4 h-4 animate-bounce text-blue-400" />
-        </motion.div>
+          <span className="text-[10px] font-mono tracking-widest uppercase">Scroll</span>
+          <ArrowDown className="w-4 h-4 animate-bounce" style={{ color: 'var(--accent)' }} />
+        </motion.button>
       </div>
     </section>
   );

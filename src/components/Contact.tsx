@@ -4,255 +4,166 @@ import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, AlertCircle, Loader2 } 
 import { ContactInfo } from '../types';
 import { submitContactMessage } from '../services/api';
 
-interface ContactProps {
-  contactInfo: ContactInfo | null;
-}
+const infoItems = [
+  { key: 'email', icon: Mail, color: 'var(--accent)', bg: 'var(--accent-light)' },
+  { key: 'phone', icon: Phone, color: '#a855f7', bg: '#f5f3ff' },
+  { key: 'location', icon: MapPin, color: '#6366f1', bg: '#eef2ff' },
+  { key: 'working_hours', icon: Clock, color: '#10b981', bg: '#f0fdf4' },
+];
 
-export function Contact({ contactInfo }: ContactProps) {
-  if (!contactInfo || !contactInfo.is_active) {
-    return null;
-  }
+export function Contact({ contactInfo }: { contactInfo: ContactInfo | null }) {
+  if (!contactInfo || !contactInfo.is_active) return null;
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-  });
-
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errMsg, setErrMsg] = useState('');
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
       setStatus('error');
-      setErrorMessage('Please fill in all required fields.');
+      setErrMsg('Please fill in all required fields.');
       return;
     }
-
     setStatus('submitting');
-    setErrorMessage('');
-
     try {
-      await submitContactMessage(formData);
+      await submitContactMessage(form);
       setStatus('success');
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      setForm({ name: '', email: '', subject: '', message: '' });
     } catch (err: any) {
       setStatus('error');
-      setErrorMessage(err.response?.data?.error || 'Failed to send message. Please try again.');
+      setErrMsg(err.response?.data?.error || 'Failed to send. Please try again.');
     }
   };
 
+  const inputClass = "w-full px-4 py-3 rounded-xl text-sm transition-all outline-none focus:ring-2";
+  const inputStyle = {
+    backgroundColor: 'var(--bg-card)',
+    border: '1px solid var(--border)',
+    color: 'var(--text)',
+  } as React.CSSProperties;
+
   return (
-    <section id="contact" className="py-24 px-4 sm:px-6 lg:px-8 relative bg-white">
+    <section id="contact" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: 'var(--bg-surface)' }}>
       <div className="max-w-6xl mx-auto">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-xs font-mono uppercase tracking-widest mb-3">
+        <div className="text-center mb-10 sm:mb-16">
+          <div className="section-pill mb-3">
             <Mail className="w-3.5 h-3.5" />
-            <span>Get in Touch</span>
+            <span>Contact</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Let's Work Together
-          </h2>
+          <h2 className="section-heading">Let's Work Together</h2>
           {contactInfo.availability_note && (
-            <p className="text-slate-500 text-sm sm:text-base max-w-xl mx-auto mt-3">
-              {contactInfo.availability_note}
-            </p>
+            <p className="section-sub">{contactInfo.availability_note}</p>
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* Direct Details */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
+          {/* Info Panel */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="lg:col-span-5 space-y-6"
+            className="lg:col-span-5"
           >
-            <div className="p-7 rounded-2xl bg-slate-50 border border-slate-200 space-y-6">
-              <h3 className="text-xl font-bold text-slate-900 mb-4">
-                Contact Information
-              </h3>
-
-              {contactInfo.email && (
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 shrink-0">
-                    <Mail className="w-5 h-5" />
+            <div className="card-theme p-5 sm:p-6 space-y-5">
+              <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Contact Information</h3>
+              {infoItems.map(({ key, icon: Icon, color, bg }) => {
+                const val = (contactInfo as any)[key];
+                if (!val) return null;
+                return (
+                  <div key={key} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: bg, color }}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-mono uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>{key.replace('_', ' ')}</p>
+                      {key === 'email' ? (
+                        <a href={`mailto:${val}`} className="text-sm font-semibold hover:text-[var(--accent)] transition-colors" style={{ color: 'var(--text)' }}>{val}</a>
+                      ) : key === 'phone' ? (
+                        <a href={`tel:${val}`} className="text-sm font-semibold hover:text-purple-500 transition-colors" style={{ color: 'var(--text)' }}>{val}</a>
+                      ) : (
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{val}</p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs font-mono text-slate-400 uppercase block">Email</span>
-                    <a
-                      href={`mailto:${contactInfo.email}`}
-                      className="text-sm font-semibold text-slate-800 hover:text-blue-600 transition-colors"
-                    >
-                      {contactInfo.email}
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {contactInfo.phone && (
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-500 shrink-0">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-mono text-slate-400 uppercase block">Phone</span>
-                    <a
-                      href={`tel:${contactInfo.phone}`}
-                      className="text-sm font-semibold text-slate-800 hover:text-purple-600 transition-colors"
-                    >
-                      {contactInfo.phone}
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {contactInfo.location && (
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500 shrink-0">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-mono text-slate-400 uppercase block">Location</span>
-                    <span className="text-sm font-semibold text-slate-800">
-                      {contactInfo.location}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {contactInfo.working_hours && (
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 shrink-0">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-mono text-slate-400 uppercase block">Working Hours</span>
-                    <span className="text-sm font-semibold text-slate-800">
-                      {contactInfo.working_hours}
-                    </span>
-                  </div>
-                </div>
-              )}
+                );
+              })}
             </div>
           </motion.div>
 
-          {/* Interactive Contact Form */}
+          {/* Form */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ delay: 0.1 }}
             className="lg:col-span-7"
           >
-            <div className="p-7 sm:p-8 rounded-2xl bg-slate-50 border border-slate-200">
-              <h3 className="text-xl font-bold text-slate-900 mb-2">
-                Send a Message
-              </h3>
-              <p className="text-xs text-slate-500 mb-6">
-                I'll get back to you as soon as possible.
-              </p>
+            <div className="card-theme p-5 sm:p-6 sm:p-8">
+              <h3 className="text-lg font-bold mb-1" style={{ color: 'var(--text)' }}>Send a Message</h3>
+              <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>I'll reply as soon as possible.</p>
 
               {status === 'success' ? (
-                <div className="p-6 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-3">
-                  <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-                  <h4 className="text-base font-bold text-slate-900">Message Sent!</h4>
-                  <p className="text-xs text-slate-600">
-                    Thank you! Your message has been received. I'll get back to you promptly.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setStatus('idle')}
-                    className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    Send Another Message
-                  </button>
+                <div className="p-6 rounded-xl text-center space-y-3 border"
+                  style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }}>
+                  <CheckCircle2 className="w-10 h-10 mx-auto text-emerald-500" />
+                  <h4 className="font-bold text-slate-900">Message Sent!</h4>
+                  <p className="text-xs text-slate-600">I'll get back to you soon.</p>
+                  <button type="button" onClick={() => setStatus('idle')}
+                    className="btn-ghost text-sm px-4 py-2">Send Another</button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {status === 'error' && (
-                    <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-center gap-2.5 text-rose-600 text-xs">
+                    <div className="flex items-center gap-2.5 p-3.5 rounded-xl text-xs border"
+                      style={{ backgroundColor: '#fff1f2', borderColor: '#fecdd3', color: '#e11d48' }}>
                       <AlertCircle className="w-4 h-4 shrink-0" />
-                      <span>{errorMessage}</span>
+                      <span>{errMsg}</span>
                     </div>
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                        Your Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-sub)' }}>Name *</label>
+                      <input type="text" required value={form.name}
+                        onChange={e => setForm({ ...form, name: e.target.value })}
                         placeholder="Your name"
-                        className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
-                      />
+                        className={inputClass}
+                        style={{ ...inputStyle, '--tw-ring-color': 'var(--accent-light)' } as any} />
                     </div>
-
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                        Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-sub)' }}>Email *</label>
+                      <input type="email" required value={form.email}
+                        onChange={e => setForm({ ...form, email: e.target.value })}
                         placeholder="your@email.com"
-                        className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
-                      />
+                        className={inputClass}
+                        style={inputStyle} />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                      Subject
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      placeholder="Project discussion or collaboration"
-                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
-                    />
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-sub)' }}>Subject</label>
+                    <input type="text" value={form.subject}
+                      onChange={e => setForm({ ...form, subject: e.target.value })}
+                      placeholder="Project discussion"
+                      className={inputClass} style={inputStyle} />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                      Message *
-                    </label>
-                    <textarea
-                      required
-                      rows={5}
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Tell me about your project or requirements..."
-                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-y"
-                    />
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-sub)' }}>Message *</label>
+                    <textarea required rows={5} value={form.message}
+                      onChange={e => setForm({ ...form, message: e.target.value })}
+                      placeholder="Tell me about your project..."
+                      className={`${inputClass} resize-y`} style={inputStyle} />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={status === 'submitting'}
-                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-blue-200 flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
-                  >
+                  <button type="submit" disabled={status === 'submitting'}
+                    className="btn-accent w-full sm:w-auto disabled:opacity-60">
                     {status === 'submitting' ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Sending...</span>
-                      </>
+                      <><Loader2 className="w-4 h-4 animate-spin" /><span>Sending...</span></>
                     ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        <span>Send Message</span>
-                      </>
+                      <><Send className="w-4 h-4" /><span>Send Message</span></>
                     )}
                   </button>
                 </form>

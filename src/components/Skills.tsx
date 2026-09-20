@@ -1,181 +1,112 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Code,
-  FileCode,
-  Palette,
-  Sparkles,
-  Box,
-  Server,
-  Cpu,
-  Zap,
-  Network,
-  Layers,
-  Database,
-  HardDrive,
-  Cloud,
-  CloudRain,
-  Container,
-  GitBranch,
-  Settings,
-  Activity,
-  Terminal,
-  BookOpen,
-  DollarSign,
-  FileSpreadsheet,
-  CheckCircle2,
-  FolderCheck,
-  Table,
-  BarChart3,
-  Globe,
-  Share2,
-  MessageSquare,
+  Code, FileCode, Palette, Sparkles, Box, Server, Cpu, Zap, Network, Layers,
+  Database, HardDrive, Cloud, CloudRain, Container, GitBranch, Settings,
+  Activity, Terminal, BookOpen, DollarSign, FileSpreadsheet, CheckCircle2,
+  FolderCheck, Table, BarChart3, Globe, Share2, MessageSquare,
 } from 'lucide-react';
 import { Skill } from '../types';
 
-interface SkillsProps {
-  skills: Skill[];
-}
-
 const ICON_MAP: Record<string, any> = {
-  Code,
-  FileCode,
-  Palette,
-  Sparkles,
-  Box,
-  Server,
-  Cpu,
-  Zap,
-  Network,
-  Layers,
-  Database,
-  HardDrive,
-  Cloud,
-  CloudRain,
-  Container,
-  GitBranch,
-  Settings,
-  Activity,
-  BookOpen,
-  DollarSign,
-  FileSpreadsheet,
-  CheckCircle2,
-  FolderCheck,
-  Table,
-  BarChart3,
-  Globe,
-  Share2,
-  MessageSquare,
+  Code, FileCode, Palette, Sparkles, Box, Server, Cpu, Zap, Network, Layers,
+  Database, HardDrive, Cloud, CloudRain, Container, GitBranch, Settings,
+  Activity, BookOpen, DollarSign, FileSpreadsheet, CheckCircle2, FolderCheck,
+  Table, BarChart3, Globe, Share2, MessageSquare,
 };
 
-export function Skills({ skills }: SkillsProps) {
-  if (!skills || skills.length === 0) {
-    return null;
-  }
+export function Skills({ skills }: { skills: Skill[] }) {
+  if (!skills?.length) return null;
 
   const categories = useMemo(() => {
-    const set = new Set<string>();
-    skills.forEach((s) => {
-      if (s.category && s.category.trim()) {
-        set.add(s.category.trim());
-      }
-    });
-    return ['All', ...Array.from(set)];
+    const s = new Set<string>();
+    skills.forEach(sk => { if (sk.category?.trim()) s.add(sk.category.trim()); });
+    return ['All', ...Array.from(s)];
   }, [skills]);
 
-  const [activeCategory, setActiveCategory] = useState('All');
-
-  const filteredSkills = useMemo(() => {
-    if (activeCategory === 'All') return skills;
-    return skills.filter((s) => s.category === activeCategory);
-  }, [skills, activeCategory]);
+  const [active, setActive] = useState('All');
+  const filtered = useMemo(() =>
+    active === 'All' ? skills : skills.filter(s => s.category === active),
+    [skills, active]
+  );
 
   return (
-    <section id="skills" className="py-24 px-4 sm:px-6 lg:px-8 relative bg-slate-50">
+    <section id="skills" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: 'var(--bg)' }}>
       <div className="max-w-6xl mx-auto">
-        {/* Section Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-xs font-mono uppercase tracking-widest mb-3">
+        <div className="text-center mb-10 sm:mb-14">
+          <div className="section-pill mb-3">
             <Terminal className="w-3.5 h-3.5" />
-            <span>Technical Capabilities</span>
+            <span>Tech Stack</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Skills & Technologies
-          </h2>
-          <p className="text-slate-500 text-sm sm:text-base max-w-xl mx-auto mt-3">
-            A full-stack toolkit spanning modern frontend, backend, and cloud infrastructure.
-          </p>
+          <h2 className="section-heading">Skills & Technologies</h2>
+          <p className="section-sub">Full-stack toolkit spanning modern frontend, backend, and cloud.</p>
         </div>
 
-        {/* Category Filter Pills */}
+        {/* Filter Pills — scrollable on mobile */}
         {categories.length > 2 && (
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer ${
-                  activeCategory === cat
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'bg-white hover:bg-blue-50 text-slate-600 border border-slate-200 hover:border-blue-200'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 mb-10 overflow-x-auto pb-2 scrollbar-none">
+            <div className="flex items-center gap-2 mx-auto flex-nowrap px-1">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setActive(cat)}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex-shrink-0 ${
+                    active === cat
+                      ? 'bg-[var(--accent)] text-white shadow-lg shadow-blue-500/25'
+                      : 'bg-theme-card border border-theme text-theme-muted hover:border-[var(--accent)] hover:text-[var(--accent)]'
+                  }`}
+                  style={active !== cat ? { backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-muted)' } : {}}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Skills Grid */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <AnimatePresence>
-            {filteredSkills.map((skill) => {
-              const IconComponent = (skill.icon && ICON_MAP[skill.icon]) || Terminal;
+            {filtered.map(skill => {
+              const Icon = (skill.icon && ICON_MAP[skill.icon]) || Terminal;
               return (
                 <motion.div
                   layout
+                  key={skill.id || skill.name}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.25 }}
-                  key={skill.id || skill.name}
-                  className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg hover:shadow-blue-50 group"
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  className="card-theme p-4 group"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 group-hover:bg-blue-100 transition-colors">
-                        <IconComponent className="w-5 h-5" />
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-[var(--accent-light)]"
+                        style={{ backgroundColor: 'var(--bg-muted)', color: 'var(--accent)' }}>
+                        <Icon className="w-4.5 h-4.5 w-[18px] h-[18px]" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">
-                          {skill.name}
-                        </h4>
-                        <span className="text-[11px] text-slate-400 font-mono">
-                          {skill.category}
-                        </span>
+                        <p className="text-sm font-semibold group-hover:text-[var(--accent)] transition-colors" style={{ color: 'var(--text)' }}>{skill.name}</p>
+                        <p className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>{skill.category}</p>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end">
-                      <span className="text-xs font-mono font-bold text-blue-600">
-                        {skill.proficiency}%
-                      </span>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-xs font-bold font-mono" style={{ color: 'var(--accent)' }}>{skill.proficiency}%</span>
                       {skill.featured && (
-                        <span className="text-[10px] font-semibold text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded mt-0.5">
+                        <div className="text-[9px] font-semibold px-1.5 py-0.5 rounded mt-0.5" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)', border: '1px solid var(--border-accent)' }}>
                           Featured
-                        </span>
+                        </div>
                       )}
                     </div>
                   </div>
-
-                  {/* Proficiency Bar */}
-                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-muted)' }}>
                     <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: `${skill.proficiency}%` }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.8, ease: 'easeOut' }}
-                      className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
+                      transition={{ duration: 0.9, ease: 'easeOut' }}
+                      className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"
                     />
                   </div>
                 </motion.div>
