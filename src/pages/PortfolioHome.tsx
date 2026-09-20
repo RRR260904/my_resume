@@ -53,29 +53,18 @@ export function PortfolioHome() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ backgroundColor: 'var(--bg)' }}>
-        {/* Blobs */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-[120px] opacity-30 bg-blue-400 dark:bg-blue-600 animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full blur-[80px] opacity-20 bg-indigo-400 dark:bg-indigo-600" style={{ animation: 'pulse-glow 3s ease-in-out infinite 1s' }} />
-
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full opacity-20 bg-blue-400" style={{ filter: 'blur(100px)', animation: 'glow-pulse 3s ease-in-out infinite' }} />
         <div className="relative z-10 text-center px-6 space-y-6">
-          {/* Logo */}
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto shadow-2xl shadow-blue-500/30">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto shadow-2xl">
             <span className="text-white text-3xl font-black">R</span>
           </div>
-
           <div className="space-y-2">
             <h1 className="text-3xl sm:text-4xl font-black" style={{ color: 'var(--text)' }}>Welcome</h1>
-            <p className="text-sm w-48 mx-auto" style={{ color: 'var(--text-muted)' }}>
-              Loading Portfolio{loadingDots}
-            </p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading Portfolio{loadingDots}</p>
           </div>
-
-          {/* Shimmer bar */}
           <div className="w-48 h-1.5 rounded-full mx-auto overflow-hidden" style={{ backgroundColor: 'var(--bg-muted)' }}>
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"
-              style={{ width: '50%', animation: 'shimmer 1.6s ease-in-out infinite' }}
-            />
+            <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"
+              style={{ width: '50%', animation: 'shimmer 1.6s ease-in-out infinite' }} />
           </div>
         </div>
       </div>
@@ -86,16 +75,16 @@ export function PortfolioHome() {
   if (error || !data) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ backgroundColor: 'var(--bg)' }}>
-        <div className="card-theme p-8 max-w-sm w-full space-y-4">
+        <div className="card p-8 max-w-sm w-full space-y-4">
           <AlertCircle className="w-10 h-10 text-rose-400 mx-auto" />
           <h2 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Connection Failed</h2>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{error || 'Unknown error'}</p>
           <div className="flex items-center justify-center gap-3 pt-1">
-            <button onClick={loadPortfolio} className="btn-accent text-xs px-4 py-2">
+            <button onClick={loadPortfolio} className="btn-primary text-xs px-4 py-2">
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Retry</span>
             </button>
-            <Link to="/admin/login" className="btn-ghost text-xs px-4 py-2">
+            <Link to="/admin/login" className="btn-outline text-xs px-4 py-2">
               <Shield className="w-3.5 h-3.5" />
               <span>Admin</span>
             </Link>
@@ -140,7 +129,7 @@ export function PortfolioHome() {
             <p>1. Open Admin Dashboard</p>
             <p>2. Click <strong>"Seed Demo Data"</strong> or add your profile manually</p>
           </div>
-          <Link to="/admin/login" className="btn-accent mx-auto">
+          <Link to="/admin/login" className="btn-primary mx-auto">
             <Shield className="w-4 h-4" />
             <span>Go to Admin Dashboard</span>
           </Link>

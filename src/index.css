@@ -1,141 +1,109 @@
 @import "tailwindcss";
 
-/* ============================================================
-   TAILWIND V4 — Enable dark mode via .dark class on <html>
-   ============================================================ */
+/* ── Tailwind v4 dark mode via .dark class on <html> ── */
 @variant dark (&:where(.dark, .dark *));
 
-/* ============================================================
-   DESIGN TOKENS — Light Theme (default)
-   ============================================================ */
+/* ════════════════════════════════════════
+   DESIGN TOKENS
+════════════════════════════════════════ */
 :root {
-  --bg:           #f8fafc;
-  --bg-surface:   #ffffff;
-  --bg-card:      #ffffff;
-  --bg-muted:     #f1f5f9;
-  --border:       #e2e8f0;
-  --border-accent:#bfdbfe;
-  --text:         #0f172a;
-  --text-sub:     #334155;
-  --text-muted:   #64748b;
-  --accent:       #3b82f6;
-  --accent-light: #eff6ff;
-  --accent-hover: #2563eb;
-  --shadow-sm:    0 1px 3px 0 rgb(0 0 0 / 0.08);
-  --shadow-md:    0 4px 16px 0 rgb(59 130 246 / 0.10);
-  --shadow-lg:    0 10px 40px 0 rgb(59 130 246 / 0.15);
-  --radius:       1rem;
+  --bg:            #f8fafc;
+  --bg-surface:    #ffffff;
+  --bg-card:       #ffffff;
+  --bg-muted:      #f1f5f9;
+  --border:        #e2e8f0;
+  --border-accent: #93c5fd;
+  --text:          #0f172a;
+  --text-sub:      #334155;
+  --text-muted:    #64748b;
+  --accent:        #3b82f6;
+  --accent-light:  #eff6ff;
+  --accent-hover:  #2563eb;
 }
-
-/* ============================================================
-   DESIGN TOKENS — Dark Theme
-   ============================================================ */
 .dark {
-  --bg:           #080d1a;
-  --bg-surface:   #0f1629;
-  --bg-card:      #111827;
-  --bg-muted:     #1a2235;
-  --border:       #1e2d45;
-  --border-accent:#1d4ed8;
-  --text:         #f1f5f9;
-  --text-sub:     #cbd5e1;
-  --text-muted:   #64748b;
-  --accent:       #60a5fa;
-  --accent-light: #1e3a5f;
-  --accent-hover: #93c5fd;
-  --shadow-sm:    0 1px 3px 0 rgb(0 0 0 / 0.4);
-  --shadow-md:    0 4px 16px 0 rgb(0 0 0 / 0.4);
-  --shadow-lg:    0 10px 40px 0 rgb(0 0 0 / 0.5);
+  --bg:            #080d1a;
+  --bg-surface:    #0f1629;
+  --bg-card:       #131e33;
+  --bg-muted:      #1a2540;
+  --border:        #1e2d4a;
+  --border-accent: #1d4ed8;
+  --text:          #f1f5f9;
+  --text-sub:      #cbd5e1;
+  --text-muted:    #64748b;
+  --accent:        #60a5fa;
+  --accent-light:  #172554;
+  --accent-hover:  #93c5fd;
 }
 
-/* ============================================================
-   BASE STYLES
-   ============================================================ */
-html {
-  scroll-behavior: smooth;
-  -webkit-tap-highlight-color: transparent;
-}
+/* ════════════════════════════════════════
+   BASE
+════════════════════════════════════════ */
+html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
 
 body {
   background-color: var(--bg);
   color: var(--text);
   transition: background-color 0.3s ease, color 0.3s ease;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-/* ============================================================
-   UTILITY CLASSES (theme-aware)
-   ============================================================ */
+/* ════════════════════════════════════════
+   REUSABLE COMPONENT CLASSES
+════════════════════════════════════════ */
 
-/* Backgrounds */
-.bg-theme          { background-color: var(--bg); }
-.bg-theme-surface  { background-color: var(--bg-surface); }
-.bg-theme-card     { background-color: var(--bg-card); }
-.bg-theme-muted    { background-color: var(--bg-muted); }
-
-/* Text */
-.text-theme        { color: var(--text); }
-.text-theme-sub    { color: var(--text-sub); }
-.text-theme-muted  { color: var(--text-muted); }
-
-/* Borders */
-.border-theme      { border-color: var(--border); }
-.border-accent     { border-color: var(--border-accent); }
-
-/* Cards */
-.card-theme {
+/* Card */
+.card {
   background-color: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  border-radius: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
-.card-theme:hover {
+.card:hover {
   border-color: var(--border-accent);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 8px 30px -8px rgba(59, 130, 246, 0.15);
 }
 
-/* Section label pill */
-.section-pill {
+/* Section pill label */
+.pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 12px;
+  padding: 4px 14px;
   border-radius: 999px;
   background-color: var(--accent-light);
   border: 1px solid var(--border-accent);
   color: var(--accent);
   font-size: 0.65rem;
   font-family: monospace;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
 }
 
 /* Section heading */
-.section-heading {
-  font-size: clamp(1.75rem, 5vw, 2.5rem);
+.heading {
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
 
-/* Section sub-heading */
-.section-sub {
+/* Muted paragraph */
+.subtext {
   color: var(--text-muted);
-  max-width: 42ch;
+  max-width: 44ch;
   margin: 0.75rem auto 0;
   font-size: 0.9rem;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-/* Tag/chip */
-.tag {
+/* Tag chip */
+.chip {
   display: inline-block;
-  padding: 2px 10px;
+  padding: 2px 9px;
   border-radius: 6px;
   background-color: var(--bg-muted);
   border: 1px solid var(--border);
@@ -143,96 +111,85 @@ body {
   font-size: 0.65rem;
   font-family: monospace;
   font-weight: 500;
-  transition: background-color 0.2s, color 0.2s;
 }
 
-/* Accent button */
-.btn-accent {
+/* Primary button */
+.btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: 13px 24px;
   border-radius: 12px;
   background: linear-gradient(135deg, #3b82f6, #6366f1);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.875rem;
-  box-shadow: 0 4px 15px 0 rgb(59 130 246 / 0.35);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35);
   transition: all 0.2s ease;
   cursor: pointer;
   border: none;
   text-decoration: none;
+  white-space: nowrap;
 }
-.btn-accent:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px 0 rgb(59 130 246 / 0.45);
-}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(59, 130, 246, 0.45); }
+.btn-primary:active { transform: translateY(0); }
 
 /* Ghost button */
-.btn-ghost {
+.btn-outline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 11px 20px;
+  padding: 12px 20px;
   border-radius: 12px;
   background-color: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   color: var(--text-sub);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.875rem;
   transition: all 0.2s ease;
   cursor: pointer;
   text-decoration: none;
+  white-space: nowrap;
 }
-.btn-ghost:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background-color: var(--accent-light);
-}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); background-color: var(--accent-light); }
 
-/* ============================================================
-   MOBILE OPTIMIZATIONS
-   ============================================================ */
-@media (max-width: 768px) {
-  /* Prevent content overflow */
-  * { box-sizing: border-box; }
+/* ════════════════════════════════════════
+   MOBILE UTILS
+════════════════════════════════════════ */
+* { box-sizing: border-box; }
+img { max-width: 100%; }
+button, a { -webkit-tap-highlight-color: transparent; }
 
-  /* Better touch targets */
-  button, a {
-    min-height: 44px;
-  }
+/* Hide scrollbar on horizontal scroll */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
-  /* Smooth momentum scrolling on iOS */
-  .overflow-y-auto, .overflow-auto {
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* ============================================================
-   SCROLLBAR (theme-aware)
-   ============================================================ */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* ════════════════════════════════════════
+   SCROLLBAR
+════════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-/* ============================================================
+/* ════════════════════════════════════════
    ANIMATIONS
-   ============================================================ */
+════════════════════════════════════════ */
 @keyframes shimmer {
-  0%   { transform: translateX(-100%); }
+  0%   { transform: translateX(-150%); }
   100% { transform: translateX(250%); }
 }
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-8px); }
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
 }
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50%       { opacity: 0.8; }
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 0.7; }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
