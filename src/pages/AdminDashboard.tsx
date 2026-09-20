@@ -28,6 +28,9 @@ import {
   Inbox,
   AlertCircle,
   Loader2,
+  Cloud,
+  HardDrive,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   fetchAdminStats,
@@ -38,6 +41,7 @@ import {
   reorderAdminItems,
   seedDatabase,
   wipeDatabase,
+  feedAtlasDatabaseApi,
   adminLogout,
   getAdminUser,
   verifyAdminToken,
@@ -92,6 +96,8 @@ export function AdminDashboard() {
 
   const [items, setItems] = useState<any[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
+  const [atlasSyncing, setAtlasSyncing] = useState(false);
+  const [atlasStatusNotice, setAtlasStatusNotice] = useState<string | null>(null);
 
   // Edit / Add Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -197,6 +203,33 @@ export function AdminDashboard() {
       setActionError(err.response?.data?.error || 'Failed to wipe database.');
     } finally {
       setStatsLoading(false);
+    }
+  };
+
+  const handleFeedAtlas = async () => {
+    try {
+      setAtlasSyncing(true);
+      setActionError(null);
+      setActionSuccess(null);
+      setAtlasStatusNotice(null);
+      const res = await feedAtlasDatabaseApi();
+      setActionSuccess(res.message || 'Successfully fed all portfolio data into MongoDB Atlas!');
+      await loadStats();
+      if (activeTab !== 'overview') {
+        await loadCollectionItems(activeTab);
+      }
+    } catch (err: any) {
+      const data = err.response?.data;
+      if (data?.is_ip_whitelist_issue) {
+        setActionError('MongoDB Atlas Connection Blocked: IP Address is not whitelisted in Atlas.');
+        setAtlasStatusNotice(
+          'Atlas rejected the connection with TLS Alert 80 because IP access is restricted. To resolve: Log in to MongoDB Atlas -> Network Access -> Add IP Address -> Select "Allow Access from Anywhere" (0.0.0.0/0) -> Confirm. Once added, click this button again!'
+        );
+      } else {
+        setActionError(data?.error || err.message || 'Failed to feed MongoDB Atlas.');
+      }
+    } finally {
+      setAtlasSyncing(false);
     }
   };
 
@@ -456,12 +489,25 @@ export function AdminDashboard() {
             </span>
             <button
               type="button"
+              onClick={handleFeedAtlas}
+              disabled={atlasSyncing}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-800/50 text-xs font-semibold text-emerald-400 transition-colors cursor-pointer"
+            >
+              {atlasSyncing ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Cloud className="w-3.5 h-3.5 text-emerald-400" />
+              )}
+              <span>Feed to MongoDB Atlas</span>
+            </button>
+            <button
+              type="button"
               onClick={handleSeedData}
               disabled={statsLoading}
               className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-blue-400 transition-colors cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-              <span>Seed Demo Data</span>
+              <span>Seed Local Data</span>
             </button>
             <button
               type="button"
@@ -561,6 +607,50 @@ export function AdminDashboard() {
                   <span className="text-[10px] text-amber-400">
                     {stats?.unread_messages ?? 0} Unread
                   </span>
+                </div>
+              </div>
+
+              {/* MongoDB Atlas Cloud Sync Card */}
+              <div className="p-5 rounded-xl bg-gradient-to-br from-emerald-950/40 via-slate-900/60 to-slate-900/80 border border-emerald-800/40 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Cloud className="w-5 h-5 text-emerald-400" />
+                    <div>
+                      <h3 className="text-sm font-bold text-white">MongoDB Atlas Cloud Database</h3>
+                      <span className="text-[11px] font-mono text-emerald-400 block">
+                        cluster0.bqaklsx.mongodb.net / portfolio_db
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleFeedAtlas}
+                    disabled={atlasSyncing}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-900/30 cursor-pointer disabled:opacity-50"
+                  >
+                    {atlasSyncing ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
+                    <span>{atlasSyncing ? 'Connecting & Seeding...' : 'Feed / Sync Data to Atlas'}</span>
+                  </button>
+                </div>
+
+                {atlasStatusNotice && (
+                  <div className="p-3 rounded-lg bg-amber-950/50 border border-amber-500/40 text-amber-200 text-xs leading-relaxed">
+                    <p className="font-semibold mb-1 flex items-center gap-1.5 text-amber-300">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      Atlas Network Access Requirement
+                    </p>
+                    <p>{atlasStatusNotice}</p>
+                  </div>
+                )}
+
+                <div className="text-xs text-slate-300 space-y-1 pt-1">
+                  <p className="text-[11px] text-slate-400">
+                    <strong className="text-slate-200">How to authorize connection:</strong> In MongoDB Atlas, navigate to <code className="text-emerald-400 font-mono">Security → Network Access</code>, click <code className="text-emerald-400 font-mono">Add IP Address</code>, select <code className="text-emerald-400 font-mono">Allow Access From Anywhere (0.0.0.0/0)</code>, and save.
+                  </p>
                 </div>
               </div>
 

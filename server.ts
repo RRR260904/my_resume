@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -323,6 +324,7 @@ async function startServer() {
       res.json({
         counts: stats,
         unread_messages: unreadMessages,
+        is_atlas: isAtlas,
         database_type: isAtlas ? 'MongoDB Atlas (Remote)' : 'Local JSON Persistent Engine',
         connected: db.isConnected()
       });
@@ -432,6 +434,32 @@ async function startServer() {
       res.json({ success: true, message: 'Database successfully seeded with realistic developer data!' });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Feed / sync directly to configured MongoDB Atlas cluster
+  app.post('/api/admin/feed-atlas', requireAdminAuth as any, async (req, res) => {
+    try {
+      const { feedAtlasDatabase } = await import('./scripts/feedAtlas.js');
+      const uri = req.body?.uri || process.env.MONGODB_URI;
+      const dbName = req.body?.db_name || process.env.MONGODB_DB_NAME || 'portfolio_db';
+      
+      if (!uri) {
+        return res.status(400).json({ error: 'No MongoDB URI configured or provided in request.' });
+      }
+
+      await feedAtlasDatabase(uri, dbName);
+      res.json({
+        success: true,
+        message: `Successfully connected to MongoDB Atlas and seeded all collections in database "${dbName}"!`
+      });
+    } catch (e: any) {
+      const isIpWhitelistIssue = e.message?.includes('SSL alert number 80') || e.message?.includes('tlsv1 alert internal error') || e.message?.includes('whitelist');
+      res.status(500).json({
+        error: e.message,
+        is_ip_whitelist_issue: isIpWhitelistIssue,
+        ip_hint: 'In MongoDB Atlas -> Network Access -> Add IP Address: Add 0.0.0.0/0 (Allow Access from Anywhere).'
+      });
     }
   });
 

@@ -173,6 +173,11 @@ export async function seedDatabase() {
   return response.data;
 }
 
+export async function feedAtlasDatabaseApi(uri?: string) {
+  const response = await apiClient.post('/admin/feed-atlas', { uri });
+  return response.data;
+}
+
 export async function wipeDatabase() {
   const response = await apiClient.post('/admin/wipe');
   return response.data;
