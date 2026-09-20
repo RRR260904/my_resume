@@ -20,13 +20,6 @@ export function PortfolioHome() {
   const [data, setData] = useState<PortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [loadingDots, setLoadingDots] = useState('');
-
-  // Animated dots
-  useEffect(() => {
-    const id = setInterval(() => setLoadingDots(p => p.length >= 3 ? '' : p + '.'), 500);
-    return () => clearInterval(id);
-  }, []);
 
   const loadPortfolio = async () => {
     try {
@@ -49,26 +42,9 @@ export function PortfolioHome() {
 
   useEffect(() => { loadPortfolio(); }, []);
 
-  /* ── Loading Screen ── */
+  /* ── Loading: blank screen, no animation ── */
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ backgroundColor: 'var(--bg)' }}>
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full opacity-20 bg-blue-400" style={{ filter: 'blur(100px)', animation: 'glow-pulse 3s ease-in-out infinite' }} />
-        <div className="relative z-10 text-center px-6 space-y-6">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto shadow-2xl">
-            <span className="text-white text-3xl font-black">R</span>
-          </div>
-          <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-black" style={{ color: 'var(--text)' }}>Welcome</h1>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading Portfolio{loadingDots}</p>
-          </div>
-          <div className="w-48 h-1.5 rounded-full mx-auto overflow-hidden" style={{ backgroundColor: 'var(--bg-muted)' }}>
-            <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"
-              style={{ width: '50%', animation: 'shimmer 1.6s ease-in-out infinite' }} />
-          </div>
-        </div>
-      </div>
-    );
+    return <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }} />;
   }
 
   /* ── Error Screen ── */
