@@ -28,6 +28,8 @@ import {
   Inbox,
   AlertCircle,
   Loader2,
+  Upload,
+  ImageIcon,
 } from 'lucide-react';
 import {
   fetchAdminStats,
@@ -41,6 +43,7 @@ import {
   adminLogout,
   getAdminUser,
   verifyAdminToken,
+  uploadImage,
 } from '../services/api';
 import { AdminStats } from '../types';
 
@@ -99,6 +102,7 @@ export function AdminDashboard() {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   // Check auth & verify JWT validity
   useEffect(() => {
@@ -296,6 +300,17 @@ export function AdminDashboard() {
         defaults.platform = 'GitHub';
         defaults.url = '';
         defaults.username = '';
+      } else if (activeTab === 'profiles') {
+        defaults.name = '';
+        defaults.role = '';
+        defaults.tagline = '';
+        defaults.bio = '';
+        defaults.profile_image = '';
+        defaults.resume_url = '';
+        defaults.location = '';
+        defaults.years_of_experience = 0;
+        defaults.email = '';
+        defaults.available_for_work = true;
       }
 
       setFormData(defaults);
@@ -1144,8 +1159,226 @@ export function AdminDashboard() {
                 </>
               )}
 
+              {/* PROFILES FORM (with image upload) */}
+              {activeTab === 'profiles' && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-slate-400 mb-1">Full Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.name || ''}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-slate-400 mb-1">Role / Job Title *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.role || ''}
+                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono uppercase text-slate-400 mb-1">Tagline</label>
+                    <input
+                      type="text"
+                      value={formData.tagline || ''}
+                      onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                      placeholder="A short catchy tagline..."
+                      className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono uppercase text-slate-400 mb-1">Bio</label>
+                    <textarea
+                      rows={3}
+                      value={formData.bio || ''}
+                      onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs"
+                    />
+                  </div>
+
+                  {/* Profile Image Upload Section */}
+                  <div>
+                    <label className="block text-xs font-mono uppercase text-slate-400 mb-2">
+                      Profile Image (Hero + Favicon)
+                    </label>
+                    <div className="flex items-start gap-5">
+                      {/* Image Preview */}
+                      <div className="shrink-0">
+                        {formData.profile_image ? (
+                          <div className="relative group">
+                            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-blue-500/50 bg-slate-950 shadow-lg shadow-blue-500/10">
+                              <img
+                                src={formData.profile_image}
+                                alt="Profile preview"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%231e293b" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%2364748b" font-size="14">No img</text></svg>';
+                                }}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setFormData({ ...formData, profile_image: '' })}
+                              className="absolute -top-1 -right-1 p-1 rounded-full bg-rose-600 hover:bg-rose-500 text-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Remove image"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="w-24 h-24 rounded-full border-2 border-dashed border-slate-700 bg-slate-950 flex items-center justify-center">
+                            <ImageIcon className="w-8 h-8 text-slate-600" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Upload Area */}
+                      <div className="flex-1 space-y-2">
+                        <label
+                          className={`flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
+                            imageUploading
+                              ? 'border-blue-500/50 bg-blue-950/20'
+                              : 'border-slate-700 hover:border-blue-500/50 hover:bg-slate-950/50'
+                          }`}
+                        >
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+                            className="hidden"
+                            disabled={imageUploading}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (file.size > 5 * 1024 * 1024) {
+                                setActionError('Image must be less than 5MB');
+                                return;
+                              }
+                              try {
+                                setImageUploading(true);
+                                setActionError(null);
+                                const result = await uploadImage(file);
+                                setFormData({ ...formData, profile_image: result.url });
+                                setActionSuccess('Image uploaded successfully!');
+                              } catch (err: any) {
+                                setActionError(err.response?.data?.error || 'Failed to upload image');
+                              } finally {
+                                setImageUploading(false);
+                                e.target.value = '';
+                              }
+                            }}
+                          />
+                          {imageUploading ? (
+                            <>
+                              <Loader2 className="w-6 h-6 text-blue-400 animate-spin mb-1" />
+                              <span className="text-[11px] text-blue-400 font-mono">Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-6 h-6 text-slate-500 mb-1" />
+                              <span className="text-[11px] text-slate-400 font-mono">Click to upload image</span>
+                              <span className="text-[10px] text-slate-600 font-mono">JPEG, PNG, WebP, GIF · Max 5MB</span>
+                            </>
+                          )}
+                        </label>
+
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-px bg-slate-800" />
+                          <span className="text-[10px] text-slate-600 font-mono uppercase">or paste URL</span>
+                          <div className="flex-1 h-px bg-slate-800" />
+                        </div>
+
+                        <input
+                          type="text"
+                          value={formData.profile_image || ''}
+                          onChange={(e) => setFormData({ ...formData, profile_image: e.target.value })}
+                          placeholder="https://example.com/photo.jpg"
+                          className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-slate-400 mb-1">Location</label>
+                      <input
+                        type="text"
+                        value={formData.location || ''}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        placeholder="Salem, Tamil Nadu"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-slate-400 mb-1">Years of Experience</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.years_of_experience ?? ''}
+                        onChange={(e) => setFormData({ ...formData, years_of_experience: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-slate-400 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={formData.email || ''}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-slate-400 mb-1">Resume URL</label>
+                      <input
+                        type="text"
+                        value={formData.resume_url || ''}
+                        onChange={(e) => setFormData({ ...formData, resume_url: e.target.value })}
+                        placeholder="https://drive.google.com/..."
+                        className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6 pt-2">
+                    <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!!formData.available_for_work}
+                        onChange={(e) => setFormData({ ...formData, available_for_work: e.target.checked })}
+                        className="rounded bg-slate-950 border-slate-800 text-blue-600"
+                      />
+                      <span>Available for Work</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_active !== false}
+                        onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                        className="rounded bg-slate-950 border-slate-800 text-blue-600"
+                      />
+                      <span>Active (Show on Portfolio)</span>
+                    </label>
+                  </div>
+                </>
+              )}
+
               {/* GENERIC FORM FOR OTHER COLLECTIONS */}
-              {!['projects', 'skills', 'experiences'].includes(activeTab) && (
+              {!['projects', 'skills', 'experiences', 'profiles'].includes(activeTab) && (
                 <div className="space-y-3">
                   {Object.keys(formData).map((key) => {
                     if (['_id', 'id', 'created_at', 'updated_at'].includes(key)) return null;

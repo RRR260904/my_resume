@@ -178,4 +178,18 @@ export async function wipeDatabase() {
   return response.data;
 }
 
+export async function uploadImage(file: File): Promise<{ success: boolean; url: string; filename: string }> {
+  const formData = new FormData();
+  formData.append('image', file);
+  const response = await apiClient.post('/admin/upload-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+}
+
+export async function deleteImage(filename: string) {
+  const response = await apiClient.delete('/admin/delete-image', { data: { filename } });
+  return response.data;
+}
+
 export default apiClient;

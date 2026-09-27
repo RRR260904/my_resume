@@ -16,6 +16,82 @@ import { SocialLinks } from '../components/SocialLinks';
 import { Contact } from '../components/Contact';
 import { Footer } from '../components/Footer';
 
+/**
+ * Draws the given image URL onto a canvas clipped to a circle,
+ * then injects the result as the browser tab favicon.
+ * Falls back to using the direct URL if CORS blocks canvas access.
+ */
+function setCircularFavicon(imageUrl: string): void {
+  // --- Helper: directly set the image URL as favicon (no canvas, no circle) ---
+  const setDirectFavicon = (url: string) => {
+    document.querySelectorAll(
+      'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]'
+    ).forEach((el) => el.remove());
+
+    const icon = document.createElement('link');
+    icon.rel = 'icon';
+    icon.type = 'image/png';
+    icon.href = url;
+    document.head.appendChild(icon);
+
+    const apple = document.createElement('link');
+    apple.rel = 'apple-touch-icon';
+    apple.href = url;
+    document.head.appendChild(apple);
+  };
+
+  // --- Canvas approach: circular clipped favicon ---
+  const img = new Image();
+  // NOTE: Do NOT set referrerPolicy here — it conflicts with crossOrigin CORS header
+  img.crossOrigin = 'anonymous';
+
+  img.onload = () => {
+    try {
+      // Remove ALL existing favicons first
+      document.querySelectorAll(
+        'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]'
+      ).forEach((el) => el.remove());
+
+      [32, 64].forEach((size) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Circular clip
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+
+        // Draw the profile image into the circle
+        ctx.drawImage(img, 0, 0, size, size);
+
+        // toDataURL() throws if canvas is CORS-tainted
+        const dataUrl = canvas.toDataURL('image/png');
+
+        const link = document.createElement('link');
+        link.rel = size === 32 ? 'icon' : 'apple-touch-icon';
+        link.type = 'image/png';
+        link.sizes = `${size}x${size}`;
+        link.href = dataUrl;
+        document.head.appendChild(link);
+      });
+    } catch (_corsErr) {
+      // Canvas tainted by CORS — fallback: use image URL directly
+      setDirectFavicon(imageUrl);
+    }
+  };
+
+  img.onerror = () => {
+    // Image failed to load — fallback: use image URL directly
+    setDirectFavicon(imageUrl);
+  };
+
+  img.src = imageUrl;
+}
+
 export function PortfolioHome() {
   const [data, setData] = useState<PortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,46 +137,9 @@ export function PortfolioHome() {
       const twDesc = document.querySelector('meta[name="twitter:description"]');
       if (twDesc && dynamicDesc) twDesc.setAttribute('content', dynamicDesc);
 
-      // Dynamically set circular favicon from profile image
+      // Set circular favicon from profile image
       if (summary.profile?.profile_image) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous'; // Attempt to avoid CORS issues for Canvas export
-        img.src = summary.profile.profile_image;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = 64;
-          canvas.height = 64;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            // Draw a circle
-            ctx.beginPath();
-            ctx.arc(32, 32, 32, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.clip();
-            // Draw image covering the circle
-            ctx.drawImage(img, 0, 0, 64, 64);
-            
-            try {
-              const dataUrl = canvas.toDataURL('image/png');
-              let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-              if (!link) {
-                link = document.createElement('link');
-                link.rel = 'icon';
-                document.head.appendChild(link);
-              }
-              link.href = dataUrl;
-            } catch (e) {
-              // Fallback to square image if Canvas toDataURL fails due to CORS
-              let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-              if (!link) {
-                link = document.createElement('link');
-                link.rel = 'icon';
-                document.head.appendChild(link);
-              }
-              link.href = summary.profile!.profile_image!;
-            }
-          }
-        };
+        setCircularFavicon(summary.profile.profile_image);
       }
     } catch (err: any) {
       console.error('Failed to fetch portfolio data:', err);

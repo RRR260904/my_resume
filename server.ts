@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
+import multer from 'multer';
 import { createServer as createViteServer } from 'vite';
 import { getDb } from './server/db.js';
 import { initialSeedData } from './server/seedData.js';
@@ -18,6 +20,13 @@ async function startServer() {
 
   app.use(cors());
   app.use(express.json());
+
+  // Ensure uploads directory exists and serve it statically
+  const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  app.use('/uploads', express.static(uploadsDir));
 
   // Database initialization and default admin seeding
   const db = await getDb();
@@ -430,6 +439,73 @@ async function startServer() {
     try {
       await db.seed(initialSeedData);
       res.json({ success: true, message: 'Database successfully seeded with realistic developer data!' });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // ==========================================
+  // IMAGE UPLOAD API
+  // ==========================================
+
+  // Configure multer for image uploads
+  const storage = multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      cb(null, uploadsDir);
+    },
+    filename: (_req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      const ext = path.extname(file.originalname) || '.jpg';
+      cb(null, `img-${uniqueSuffix}${ext}`);
+    },
+  });
+
+  const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+    fileFilter: (_req, file, cb) => {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files (JPEG, PNG, GIF, WebP, SVG) are allowed'));
+      }
+    },
+  });
+
+  // POST /api/admin/upload-image — Upload an image file and return the URL
+  app.post('/api/admin/upload-image', requireAdminAuth as any, upload.single('image'), (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No image file provided' });
+      }
+      const imageUrl = `/uploads/${req.file.filename}`;
+      res.json({
+        success: true,
+        url: imageUrl,
+        filename: req.file.filename,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+      });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // DELETE /api/admin/delete-image — Delete an uploaded image
+  app.delete('/api/admin/delete-image', requireAdminAuth as any, (req, res) => {
+    try {
+      const { filename } = req.body;
+      if (!filename) {
+        return res.status(400).json({ error: 'Filename is required' });
+      }
+      // Sanitize: only allow deleting from uploads dir
+      const safeName = path.basename(filename);
+      const filePath = path.join(uploadsDir, safeName);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      res.json({ success: true, message: 'Image deleted' });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
